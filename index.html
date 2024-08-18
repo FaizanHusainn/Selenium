@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Web Scraping with Selenium</title>
+</head>
+<body>
+    <h1>Enter Search Term</h1>
+    <form action="/scrape" method="post">
+        <label for="searchTerm">Search Term:</label>
+        <input type="text" id="searchTerm" name="searchTerm" required>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
