@@ -1,0 +1,89 @@
+package ICEX_india;
+
+import java.io.File;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+public class icex {
+    public static void main(String args[]) {
+        String downloadFilepath = "C:\\Users\\FaizanHusain\\eclipse-workspace\\Automation\\src\\test\\java\\ICEX_india";
+        
+        // Configure Chrome options for downloading PDF
+        Map<String, Object> prefs = new HashMap<String, Object>();
+        prefs.put("download.default_directory", downloadFilepath);
+        prefs.put("download.prompt_for_download", false);
+        prefs.put("download.directory_upgrade", true);
+        prefs.put("plugins.always_open_pdf_externally", true);  // This will download the PDF instead of opening it
+        ChromeOptions options = new ChromeOptions();
+        options.setExperimentalOption("prefs", prefs);
+
+        WebDriver driver = new ChromeDriver(options);
+        driver.manage().window().maximize();
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
+        
+        driver.get("https://www.icexindia.com/membership/expelled-defaulter-surrendered-members");
+        try {
+            WebElement safety_btn = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("button#details-button")));
+            safety_btn.click();
+            
+            WebElement link_click = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("a#proceed-link")));
+            link_click.click();
+            
+            Thread.sleep(2000);
+            
+            WebElement ul_list = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id=\"Content_T487D4B76010_Col00\"]/div/div/ul/li[1]/a")));
+            ul_list.click();  // This will now download the PDF to the specified directory
+
+            // Wait for the file to be downloaded
+            Thread.sleep(5000); // Adjust the sleep time according to your download speed
+            
+            // Specify the file name of the downloaded PDF
+            File file = new File(downloadFilepath + "\\list-of-surrendered-membersae6b9d010302488d96f153facd6edce7.pdf"); // Replace with the actual PDF file name
+
+            // Parse and search the PDF content
+            if (file.exists()) {
+                PDDocument document = PDDocument.load(file);
+                PDFTextStripper pdfStripper = new PDFTextStripper();
+                String pdfContent = pdfStripper.getText(document);
+
+                // Split the content into lines for better handling
+                String[] lines = pdfContent.split("\\r?\\n");
+
+                // Search for specific text and extract all matching rows
+                String searchText = "Divya"; // Replace with the text you want to search for
+                boolean found = false;
+                
+                for (String line : lines) {
+                    if (line.contains(searchText)) {
+                        System.out.println("Row found: " + line);
+                        found = true;
+                    }
+                }
+                
+                if (!found) {
+                    System.out.println("Text not found: " + searchText);
+                }
+                document.close();
+            } else {
+                System.out.println("PDF file not found.");
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            System.out.println("Execution complete");
+            driver.quit(); // Close the browser
+        }
+    }
+}
